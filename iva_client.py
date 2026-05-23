@@ -1665,7 +1665,12 @@ class IVASSMSClient:
                     logger.warning("Login aborted because browser page is no longer available after CF wait")
                     return False
 
-                logger.info(f"📄 Page: {await self._page.title()} | {self._page.url}")
+                page_title = await self._page.title()
+                page_url = self._page.url
+                logger.info(f"📄 Page: {page_title} | {page_url}")
+                if "Just a moment" in page_title or "Cloudflare" in page_title:
+                    logger.warning("Cloudflare challenge masih aktif setelah timeout login headless")
+                    return False
 
                 # Step 3 — Tunggu form email muncul
                 logger.info("⏳ Waiting for login form...")
