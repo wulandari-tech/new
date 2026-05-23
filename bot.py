@@ -1965,6 +1965,10 @@ async def restore_ivasms_session_background():
     global session_lost_notified
 
     try:
+        if iva_client.has_env_cookies():
+            logger.info("OTP poll skipped: env cookie session is manual-only and won't be auto-restored")
+            return False
+
         restore_ok = False
 
         if iva_client.has_cookies_file():

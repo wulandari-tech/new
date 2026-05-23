@@ -1532,6 +1532,9 @@ class IVASSMSClient:
         with open(self._cookies_file, encoding="utf-8") as f:
             return json.load(f)
 
+    def has_env_cookies(self):
+        return bool(os.getenv("IVASMS_COOKIES_JSON", "").strip())
+
     async def _load_cookies(self):
         """Load cookies dari file."""
         try:
