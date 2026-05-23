@@ -1,0 +1,12 @@
+python-telegram-bot[job-queue]==21.6
+cloudscraper
+beautifulsoup4
+brotli
+patchright
+playwright
+playwright-stealth
+pyvirtualdisplay
+openpyxl
+mysql-connector-python
+pymongo[srv]
+dnspython
