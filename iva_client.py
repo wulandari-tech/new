@@ -1516,14 +1516,42 @@ class IVASSMSClient:
             logger.error(f"❌ Load credentials error: {e}")
         return None
 
+    def _load_cookies_payload(self):
+        cookies_env = os.getenv("IVASMS_COOKIES_JSON", "").strip()
+        if cookies_env:
+            try:
+                payload = json.loads(cookies_env)
+                logger.info("🍪 Using cookies from IVASMS_COOKIES_JSON")
+                return payload
+            except Exception as exc:
+                logger.warning(f"⚠️ Invalid IVASMS_COOKIES_JSON payload: {exc}")
+
+        if not os.path.exists(self._cookies_file):
+            return None
+
+        with open(self._cookies_file, encoding="utf-8") as f:
+            return json.load(f)
+
     async def _load_cookies(self):
         """Load cookies dari file."""
-        if not os.path.exists(self._cookies_file):
-            return False
         try:
-            with open(self._cookies_file, encoding="utf-8") as f:
-                cookies = json.load(f)
-            if not cookies or not isinstance(cookies, list):
+            cookies = self._load_cookies_payload()
+            if not cookies:
+                return False
+
+            if isinstance(cookies, dict):
+                cookies = [
+                    {
+                        "name": key,
+                        "value": value,
+                        "domain": ".ivasms.com",
+                        "path": "/",
+                    }
+                    for key, value in cookies.items()
+                    if key and value
+                ]
+
+            if not isinstance(cookies, list):
                 return False
 
             # Normalize & filter valid cookies
@@ -1554,7 +1582,8 @@ class IVASSMSClient:
         except Exception as e:
             logger.warning(f"⚠️ Load cookies error: {e}")
             try:
-                os.remove(self._cookies_file)
+                if os.path.exists(self._cookies_file):
+                    os.remove(self._cookies_file)
             except Exception:
                 pass
             return False
@@ -1562,6 +1591,8 @@ class IVASSMSClient:
     # ────────── Login ──────────
 
     def has_cookies_file(self, cookies_file=None):
+        if os.getenv("IVASMS_COOKIES_JSON", "").strip():
+            return True
         target = cookies_file if cookies_file is not None else self._cookies_file
         return os.path.exists(target)
 
